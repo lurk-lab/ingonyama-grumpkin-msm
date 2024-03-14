@@ -1,7 +1,8 @@
 use std::{mem::transmute, sync::atomic::{AtomicUsize, Ordering}, time::Instant};
 
 use halo2curves::{bn256, group::Curve, CurveExt};
-use ingonyama_grumpkin_msm::{bn256_msm, read_arecibo_data};
+use icicle_cuda_runtime::stream::CudaStream;
+use ingonyama_grumpkin_msm::{bn256_msm, default_config, read_arecibo_data};
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
@@ -57,8 +58,11 @@ fn main() {
     let size = scalars.len();
     let points = gen_points(size);
 
+    let stream = CudaStream::create().expect("Failed to create CUDA stream");
+    let cfg = default_config(&stream);
+
     println!("start msm");
     let start = Instant::now();
-    let res = bn256_msm(&points, &scalars);
+    let res = bn256_msm(&points, &scalars, &cfg);
     println!("{:?} {:?}", start.elapsed(), res);
 }

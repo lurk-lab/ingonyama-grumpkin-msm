@@ -24,6 +24,6 @@ rand_chacha = "^0"
 rayon = "1.5"
 
 # GPU Icicle integration
-icicle-cuda-runtime = { git = "https://github.com/ingonyama-zk/icicle.git" }
-icicle-core = { git = "https://github.com/ingonyama-zk/icicle.git" }
-icicle-bn254 = { git = "https://github.com/ingonyama-zk/icicle.git" }
+icicle-cuda-runtime = { git = "https://github.com/ingonyama-zk/icicle.git", branch = "new_device_slice" }
+icicle-core = { git = "https://github.com/ingonyama-zk/icicle.git", branch = "new_device_slice" }
+icicle-bn254 = { git = "https://github.com/ingonyama-zk/icicle.git", branch = "new_device_slice" }
