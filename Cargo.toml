@@ -1,0 +1,29 @@
+[package]
+name = "ingonyama-grumpkin-msm"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Ingonyama's implementation of an MSM for the Grumpkin curve cycle"
+repository = "https://github.com/lurk-lab/ingonyama-grumpkin-msm"
+readme = "README.md"
+include = [
+    "/benches/**",
+    "/src/**",
+    "/Cargo.toml",
+    "/README.md",
+]
+rust-version = "1.70"
+
+[dependencies]
+halo2curves = { version = "0.6.0", features = ["bits", "derive_serde"] }
+bincode = "1.3.3"
+home = "0.5.9"
+serde = "1.0.197"
+rand = "^0"
+rand_chacha = "^0"
+rayon = "1.5"
+
+# GPU Icicle integration
+icicle-cuda-runtime = { git = "https://github.com/ingonyama-zk/icicle.git" }
+icicle-core = { git = "https://github.com/ingonyama-zk/icicle.git" }
+icicle-bn254 = { git = "https://github.com/ingonyama-zk/icicle.git" }
