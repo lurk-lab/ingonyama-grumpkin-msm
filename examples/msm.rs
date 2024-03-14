@@ -1,4 +1,8 @@
-use std::{mem::transmute, sync::atomic::{AtomicUsize, Ordering}, time::Instant};
+use std::{
+    mem::transmute,
+    sync::atomic::{AtomicUsize, Ordering},
+    time::Instant,
+};
 
 use halo2curves::{bn256, group::Curve, CurveExt};
 use icicle_cuda_runtime::stream::CudaStream;

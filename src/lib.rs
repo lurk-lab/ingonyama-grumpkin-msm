@@ -5,9 +5,9 @@ use icicle_cuda_runtime::memory::{DeviceVec, HostSlice};
 use icicle_cuda_runtime::stream::CudaStream;
 
 use serde::de::DeserializeOwned;
+use std::convert::TryInto;
 use std::fs::File;
 use std::io::BufReader;
-use std::{convert::TryInto, time::Instant};
 
 /// Path to the directory where Arecibo data will be stored.
 pub static ARECIBO_DATA: &str = ".arecibo_data";
@@ -45,6 +45,22 @@ fn icicle_to_bn256_point(point: &G1Affine) -> bn256::G1Affine {
     }
 }
 
+
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct Config {
+    pub stream: CudaStream,
+}
+
+unsafe impl Sync for Config {}
+
+impl Config {
+    pub fn new() -> Self {
+        let stream = CudaStream::create().expect("Failed to create CUDA stream");
+        Config { stream }
+    }
+}
+
 pub fn default_config(stream: &CudaStream) -> msm::MSMConfig {
     let mut cfg = msm::MSMConfig::default();
     cfg.ctx.stream = &stream;
@@ -59,23 +75,14 @@ pub fn bn256_msm(
     scalars: &[bn256::Fr],
     cfg: &msm::MSMConfig,
 ) -> bn256::G1 {
-
-    let start = Instant::now();
-
     // Wrap points and scalars in HostOrDeviceSlice for MSM
     let points = unsafe { &*(points as *const [bn256::G1Affine] as *const [G1Affine]) };
     let scalars = unsafe { &*(scalars as *const [bn256::Fr] as *const [ScalarField]) };
     let points_host = HostSlice::from_slice(points);
     let scalars_host = HostSlice::from_slice(scalars);
 
-    let transfer = start.elapsed();
-    println!("cloning points and scalars: {:?}", transfer);
-
     // Allocate memory on the CUDA device for MSM results
     let mut msm_results = DeviceVec::<G1Projective>::cuda_malloc(1).unwrap();
-
-    let malloc = start.elapsed();
-    println!("malloc result memory: {:?}", malloc - transfer);
 
     // Execute MSM on the device
     let mut msm_host_result = vec![G1Projective::zero(); 1];
@@ -84,9 +91,6 @@ pub fn bn256_msm(
     msm_results
         .copy_to_host(HostSlice::from_mut_slice(&mut msm_host_result[..]))
         .unwrap();
-
-    let msm = start.elapsed();
-    println!("compute end-to-end msm: {:?}", msm - malloc);
 
     icicle_to_bn256_point(&G1Affine::from(msm_host_result[0])).into()
 }
